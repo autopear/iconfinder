@@ -1,0 +1,13 @@
+Package: com.autopear.iconfinder
+Version: 1.0.1
+Section: Tweak
+Maintainer: BigBoss <bigboss@thebigboss.org>
+Depends: firmware (>= 7.0), mobilesubstrate (>= 0.9.5000)
+Architecture: iphoneos-arm
+Name: Icon Finder
+Priority: optional
+Description: Locate app icon from Spotlight.
+Sponsor: thebigboss.org <http://thebigboss.org>
+Author: Merlin
+Tag: role:enduser
+dev: lonelystars

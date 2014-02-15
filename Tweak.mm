@@ -93,27 +93,27 @@
         }
 
         SBSearchModel *searchModel = [%c(SBSearchModel) sharedInstance];
-        
+
         SPSearchResultSection *section = [searchModel sectionAtIndex:[indexPath indexAtPosition:0]];
-        
+
         if (section) {
             SPSearchResult *result = [section resultsAtIndex:[indexPath indexAtPosition:1]];
-        
+
             if (result && result.hasUrl) {
                 NSString *appId = result.url;
                 NSLog(@"Locate application icon with identifier: %@", appId);
-                
+
                 SBIconController *iconController = [%c(SBIconController) sharedInstance];
-                
+
                 SBFolder *rootFolder = [iconController rootFolder];
                 NSIndexPath *appIndexPath = [rootFolder indexPathForIconWithIdentifier:appId];
-                
+
                 if (appIndexPath) {
                     [self dismiss];
-                    
+
                     if ([iconController hasOpenFolder])
                         [iconController closeFolderAnimated:NO];
-                    
+
                     for (int i=[appIndexPath length]; i>-1; i--) {
                         NSIndexPath *childIndexPath = appIndexPath;
                         for (int j=0; j<i; j++) {
@@ -152,7 +152,6 @@ static CGFloat originalAlpha, newAlpha;
 /* https://github.com/frowing/UIView-blink/blob/master/UIView%2BBlink.m */
 %new
 -(void)privateBlinkView:(UIView *)view duration:(NSTimeInterval)duration speed:(NSTimeInterval)speed accumulatedTime:(NSTimeInterval)accumulatedTime hideOrShow:(BOOL)hide {
-    
     [UIView animateWithDuration:speed animations:^{
         view.alpha = hide ? newAlpha : originalAlpha;
     }
@@ -170,11 +169,11 @@ static CGFloat originalAlpha, newAlpha;
 - (void)blinkView:(UIView *)view duration:(NSTimeInterval)duration speed:(NSTimeInterval)speed {
     originalAlpha = view.alpha;
     newAlpha = originalAlpha >= 0.5f ? 0.0f : 1.0f;
-    
+
     [UIView animateWithDuration:speed animations:^{
         view.alpha = newAlpha;
     }
-    
+
     completion:^(BOOL finished) {
         [self privateBlinkView:view duration:duration speed:speed accumulatedTime:0.0f hideOrShow:YES];
     }];

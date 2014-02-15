@@ -15,8 +15,6 @@ before-package::
 	chmod 0644 _/Library/MobileSubstrate/DynamicLibraries/IconFinder.plist
 	find _ -exec touch -r _/Library/MobileSubstrate/DynamicLibraries/IconFinder.dylib {} \;
 	find _ -name ".*" -exec rm -f {} \;
-	sudo chown -R 0:0 _
 
 after-package::
-	sudo chown -R merlin:staff _
 	rm -fr .theos/packages/*

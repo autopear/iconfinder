@@ -146,19 +146,16 @@
     }
 }
 
-//If the icon's alpha is changed by some other tweak
-static CGFloat originalAlpha, newAlpha;
-
 /* https://github.com/frowing/UIView-blink/blob/master/UIView%2BBlink.m */
 %new
 -(void)privateBlinkView:(UIView *)view duration:(NSTimeInterval)duration speed:(NSTimeInterval)speed accumulatedTime:(NSTimeInterval)accumulatedTime hideOrShow:(BOOL)hide {
     [UIView animateWithDuration:speed animations:^{
-        view.alpha = hide ? newAlpha : originalAlpha;
+        view.alpha = hide ? 0.0f : 1.0f;
     }
 
     completion:^(BOOL finished) {
         if (accumulatedTime >= duration) {
-            view.alpha = originalAlpha;
+            view.alpha = 1.0f;
         } else {
             [self privateBlinkView:view duration:duration speed:speed accumulatedTime:(accumulatedTime + speed) hideOrShow:!hide];
         }
@@ -167,11 +164,8 @@ static CGFloat originalAlpha, newAlpha;
 
 %new
 - (void)blinkView:(UIView *)view duration:(NSTimeInterval)duration speed:(NSTimeInterval)speed {
-    originalAlpha = view.alpha;
-    newAlpha = originalAlpha >= 0.5f ? 0.0f : 1.0f;
-
     [UIView animateWithDuration:speed animations:^{
-        view.alpha = newAlpha;
+        view.alpha = 0.0f;
     }
 
     completion:^(BOOL finished) {

@@ -1,8 +1,8 @@
 Package: com.autopear.iconfinder
-Version: 1.0.2
+Version: 1.2
 Section: Tweak
 Maintainer: BigBoss <bigboss@thebigboss.org>
-Depends: firmware (>= 7.0), mobilesubstrate (>= 0.9.5000)
+Depends: firmware (>= 7.0), mobilesubstrate (>= 0.9.6011)
 Architecture: iphoneos-arm
 Name: Icon Finder
 Priority: optional

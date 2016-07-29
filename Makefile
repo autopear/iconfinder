@@ -1,12 +1,12 @@
-export ARCHS = arm64 armv7s armv7
-export TARGET = iphone:8.1:7.0
+export ARCHS = arm64 armv7
+export TARGET = iphone:9.2:7.0
 
 include theos/makefiles/common.mk
 
 TWEAK_NAME = IconFinder
 IconFinder_FILES = Tweak.xm
 IconFinder_FRAMEWORKS = UIKit
-IconFinder_PRIVATE_FRAMEWORKS = Search
+IconFinder_PRIVATE_FRAMEWORKS = Search SpotlightUI
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

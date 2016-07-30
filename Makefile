@@ -7,14 +7,16 @@ TWEAK_NAME = IconFinder
 IconFinder_FILES = Tweak.xm
 IconFinder_FRAMEWORKS = UIKit
 IconFinder_PRIVATE_FRAMEWORKS = Search SpotlightUI
+IconFinder_LDFLAGS = -weak_framework SearchUI
+IconFinder_LDFLAGS += -Wl,-segalign,4000
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 before-package::
-	plutil -convert binary1 _/Library/MobileSubstrate/DynamicLibraries/IconFinder.plist
-	chmod 0644 _/Library/MobileSubstrate/DynamicLibraries/IconFinder.plist
-	find _ -exec touch -r _/Library/MobileSubstrate/DynamicLibraries/IconFinder.dylib {} \;
-	find _ -name ".*" -exec rm -f {} \;
+	plutil -convert binary1 $(THEOS_STAGING_DIR)/Library/MobileSubstrate/DynamicLibraries/IconFinder.plist
+	chmod 0644 $(THEOS_STAGING_DIR)/Library/MobileSubstrate/DynamicLibraries/IconFinder.plist
+	find $(THEOS_STAGING_DIR) -exec touch -r $(THEOS_STAGING_DIR)/Library/MobileSubstrate/DynamicLibraries/IconFinder.dylib {} \;
+	find $(THEOS_STAGING_DIR) -name ".*" -exec rm -f {} \;
 
 after-package::
 	rm -fr .theos/packages/*

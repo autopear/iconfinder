@@ -85,6 +85,19 @@
 @interface SBIconImageView : UIView
 @end
 
+@interface SearchUIIconViewContainer : UIView
+@property (retain) NSArray *iconViews;
+@end
+
+@interface SearchUISimpleMultiResultTableViewCell : UITableViewCell
+@property (retain) SearchUIIconViewContainer *topContainer;
+@property (retain) SearchUIIconViewContainer *bottomContainer;
+@end
+
+@interface SearchUIIconView : UIView
+-(id)result;
+@end
+
 %group iOS78
 
 %hook SBSearchViewController
@@ -102,8 +115,8 @@
 
 %new
 -(void)handleLongPress:(UILongPressGestureRecognizer *)gestureRecognizer {
-    //if (gestureRecognizer.state != UIGestureRecognizerStateEnded)
-    //    return;
+    if (gestureRecognizer.state != UIGestureRecognizerStateBegan)
+        return;
 
     UITableView *_tableView = CHIvar(self, _tableView, UITableView *);
 
@@ -218,12 +231,13 @@
 
 %new
 -(void)handleLongPress:(UILongPressGestureRecognizer *)gestureRecognizer {
-    //if (gestureRecognizer.state != UIGestureRecognizerStateEnded)
-    //    return;
+    if (gestureRecognizer.state != UIGestureRecognizerStateBegan)
+        return;
 
     SPUISearchTableView *tableView = [self searchTableView];
-
     CGPoint p = [gestureRecognizer locationInView:tableView];
+
+    NSString *appID = nil;
 
     NSIndexPath *indexPath = [tableView indexPathForRowAtPoint:p];
     if (indexPath && [indexPath length] == 2) {
@@ -236,51 +250,87 @@
         if (section) {
             SPSearchResult *result = [section resultsAtIndex:[indexPath indexAtPosition:1]];
 
-            if (result && result.hasUrl) {
-                NSString *appId = result.url;
-                NSLog(@"Locate application icon with identifier: %@", appId);
+            if (result && result.hasUrl)
+                appID = result.url;
+        }
+    }
 
-                SBIconController *iconController = [%c(SBIconController) sharedInstance];
+    if (kCFCoreFoundationVersionNumber >=1242.13 && !appID) {
+        //Only works for iOS 9.2+
+        for (UITableView *cell in tableView.visibleCells) {
+            if ([cell isKindOfClass:[SearchUISimpleMultiResultTableViewCell class]]) {
+                SearchUISimpleMultiResultTableViewCell *resCell = (SearchUISimpleMultiResultTableViewCell *)cell;
 
-                SBFolder *rootFolder = [iconController rootFolder];
-                NSIndexPath *appIndexPath = [rootFolder indexPathForIconWithIdentifier:appId];
+                for (SearchUIIconView *iconView in resCell.topContainer.iconViews) {
+                    CGPoint iconp = [tableView convertPoint:p toView:iconView];
+                    if ([iconView pointInside:iconp withEvent:nil]) {
+                        SPSearchResult *result = (SPSearchResult *)[iconView result];
+                        if (result && result.hasUrl) {
+                            appID = result.url;
+                            break;
+                        }
+                    }
+                }
 
-                if (appIndexPath) {
-                    [self dismiss];
+                if (appID)
+                    break;
 
-                    if ([iconController hasOpenFolder])
-                        [iconController closeFolderAnimated:NO];
+                for (SearchUIIconView *iconView in resCell.bottomContainer.iconViews) {
+                    CGPoint iconp = [tableView convertPoint:p toView:iconView];
+                    if ([iconView pointInside:iconp withEvent:nil]) {
+                        SPSearchResult *result = (SPSearchResult *)[iconView result];
+                        if (result && result.hasUrl) {
+                            appID = result.url;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-                    for (int i=[appIndexPath length]; i>-1; i--) {
-                        NSIndexPath *childIndexPath = appIndexPath;
-                        for (int j=0; j<i; j++)
-                            childIndexPath = [childIndexPath indexPathByRemovingLastIndex];
+    if (appID) {
+        NSLog(@"Locate application icon with identifier: %@", appID);
 
-                        SBIcon *icon = [rootFolder iconAtIndexPath:childIndexPath];
-                        if (icon) {
-                            [iconController scrollToIconListContainingIcon:icon animate:NO];
-                            if ([icon isFolderIcon])
-                                [iconController openFolder:[icon folder] animated:NO];
+        SBIconController *iconController = [%c(SBIconController) sharedInstance];
 
-                            if (i == 0) {
-                                SBFolderController *folderController = [iconController _currentFolderController];
-                                if (folderController)
-                                    [folderController setCurrentPageIndexToListContainingIcon:icon animated:NO];
+        SBFolder *rootFolder = [iconController rootFolder];
+        NSIndexPath *appIndexPath = [rootFolder indexPathForIconWithIdentifier:appID];
 
-                                SBIconViewMap *iconMap = nil;
-                                if ([%c(SBIconViewMap) respondsToSelector:@selector(homescreenMap)])
-                                    iconMap = [%c(SBIconViewMap) homescreenMap];
-                                else if ([iconController respondsToSelector:@selector(homescreenIconViewMap)])
-                                    iconMap = [iconController homescreenIconViewMap];
-                                else
-                                    ;
+        if (appIndexPath) {
+            [self dismiss];
 
-                                if (iconMap) {
-                                    SBIconImageView *iconView = [iconMap iconViewForIcon:icon];
-                                    if (iconView)
-                                        [self blinkView:iconView duration:1.2 speed:0.3];
-                                }
-                            }
+            if ([iconController hasOpenFolder])
+                [iconController closeFolderAnimated:NO];
+
+            for (int i=[appIndexPath length]; i>-1; i--) {
+                NSIndexPath *childIndexPath = appIndexPath;
+                for (int j=0; j<i; j++)
+                    childIndexPath = [childIndexPath indexPathByRemovingLastIndex];
+
+                SBIcon *icon = [rootFolder iconAtIndexPath:childIndexPath];
+                if (icon) {
+                    [iconController scrollToIconListContainingIcon:icon animate:NO];
+                    if ([icon isFolderIcon])
+                        [iconController openFolder:[icon folder] animated:NO];
+
+                    if (i == 0) {
+                        SBFolderController *folderController = [iconController _currentFolderController];
+                        if (folderController)
+                            [folderController setCurrentPageIndexToListContainingIcon:icon animated:NO];
+
+                        SBIconViewMap *iconMap = nil;
+                        if ([%c(SBIconViewMap) respondsToSelector:@selector(homescreenMap)])
+                            iconMap = [%c(SBIconViewMap) homescreenMap];
+                        else if ([iconController respondsToSelector:@selector(homescreenIconViewMap)])
+                            iconMap = [iconController homescreenIconViewMap];
+                        else
+                            ;
+
+                        if (iconMap) {
+                            SBIconImageView *iconView = [iconMap iconViewForIcon:icon];
+                            if (iconView)
+                                [self blinkView:iconView duration:1.2 speed:0.3];
                         }
                     }
                 }

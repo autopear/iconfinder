@@ -31,6 +31,7 @@
 @end
 
 @interface SBFolderController : NSObject
+-(void)popToIndexPath:(NSIndexPath *)indexPath;
 -(BOOL)setCurrentPageIndexToListContainingIcon:(id)listContainingIcon animated:(BOOL)animated;
 @end
 
@@ -313,11 +314,10 @@
                     [iconController scrollToIconListContainingIcon:icon animate:NO];
                     if ([icon isFolderIcon])
                         [iconController openFolder:[icon folder] animated:NO];
-
                     if (i == 0) {
                         SBFolderController *folderController = [iconController _currentFolderController];
                         if (folderController)
-                            [folderController setCurrentPageIndexToListContainingIcon:icon animated:NO];
+                            [folderController popToIndexPath:childIndexPath];
 
                         SBIconViewMap *iconMap = nil;
                         if ([%c(SBIconViewMap) respondsToSelector:@selector(homescreenMap)])

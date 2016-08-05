@@ -10,6 +10,8 @@ IconFinder_PRIVATE_FRAMEWORKS = Search SpotlightUI
 IconFinder_LDFLAGS = -weak_framework SearchUI
 IconFinder_LDFLAGS += -Wl,-segalign,4000
 
+VERSION.INC_BUILD_NUMBER = 2
+
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 before-package::
